@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw NYC TLC yellow taxi trip data."
+    # On dev (DuckDB) the external_location reads local Parquet directly.
+    # On prod (BigQuery) the raw table is loaded by the dlt loader stage
+    # (loader/load_to_bq.py) into the configured dataset, so we point the
+    # source at that table instead.
+    tables:
+      - name: yellow_tripdata
+        description: "One row per yellow taxi trip."
+        meta:
+          external_location: >
+            {%- if target.type == 'duckdb' -%}
+            read_parquet('data/yellow_tripdata_*.parquet', union_by_name=true)
+            {%- else -%}
+            {{ target.project }}.{{ target.dataset }}.yellow_tripdata
+            {%- endif -%}

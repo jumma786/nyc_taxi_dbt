@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: stg_trips
+    description: "Cleaned and typed yellow taxi trips, one row per trip."
+    columns:
+      - name: trip_id
+        description: "Surrogate key generated from trip attributes."
+        data_tests:
+          - not_null
+      - name: pickup_at
+        data_tests:
+          - not_null
+      - name: dropoff_at
+        data_tests:
+          - not_null
+      - name: total_amount
+        description: "Total charged to passenger."
+        data_tests:
+          - not_null
+
+  - name: stg_zones
+    description: "Taxi zone lookup: maps LocationID to borough and zone."
+    columns:
+      - name: location_id
+        data_tests:
+          - unique
+          - not_null

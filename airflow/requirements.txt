@@ -1,0 +1,5 @@
+apache-airflow==2.9.3
+dbt-duckdb>=1.7,<2.0
+duckdb>=0.10
+pandas>=2.0
+pyarrow>=14.0

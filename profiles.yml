@@ -1,0 +1,34 @@
+# Copy this to ~/.dbt/profiles.yml, or run dbt with --profiles-dir .
+#
+# Two targets:
+#   dev  -> DuckDB, local, free, for iteration       (default)
+#   prod -> BigQuery, cloud, driven by env vars only
+#
+# The prod target reads everything from environment variables so no project
+# ID, dataset, or key path is ever committed. Set these before running:
+#   export DBT_BQ_PROJECT=your-gcp-project-id
+#   export DBT_BQ_DATASET=nyc_taxi
+#   export DBT_BQ_KEYFILE=/absolute/path/to/service-account.json
+#   export DBT_BQ_LOCATION=EU        # or US
+nyc_taxi:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: nyc_taxi.duckdb
+      threads: 4
+      extensions:
+        - httpfs
+        - parquet
+
+    prod:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('DBT_BQ_PROJECT') }}"
+      dataset: "{{ env_var('DBT_BQ_DATASET', 'nyc_taxi') }}"
+      keyfile: "{{ env_var('DBT_BQ_KEYFILE') }}"
+      location: "{{ env_var('DBT_BQ_LOCATION', 'EU') }}"
+      threads: 4
+      priority: interactive
+      job_execution_timeout_seconds: 600
+      job_retries: 1

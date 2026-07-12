@@ -1,0 +1,27 @@
+# Minimal single-container Airflow (standalone) for local development.
+# DuckDB is file-based, so no separate warehouse service is needed.
+#
+#   docker compose up
+#   # UI at http://localhost:8080  (login shown in the container logs)
+#
+# The whole repo is mounted at /opt/project so the DAG can call the dbt
+# project and the download script directly.
+
+services:
+  airflow:
+    image: apache/airflow:2.9.3-python3.11
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/project/airflow/dags
+      PROJECT_DIR: /opt/project
+      DBT_TARGET: dev
+      _PIP_ADDITIONAL_REQUIREMENTS: "dbt-duckdb>=1.7,<2.0 duckdb>=0.10 pandas>=2.0 pyarrow>=14.0"
+    volumes:
+      - ./:/opt/project
+      - airflow_db:/opt/airflow
+    command: standalone
+
+volumes:
+  airflow_db:

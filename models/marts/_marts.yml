@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: dim_zone
+    description: "Zone dimension: LocationID to borough/zone/service_zone."
+    columns:
+      - name: location_id
+        data_tests:
+          - unique
+          - not_null
+
+  - name: fct_trips
+    description: "Trip fact table (incremental), one row per trip, enriched with zone and derived metrics."
+    columns:
+      - name: trip_id
+        data_tests:
+          - unique
+          - not_null
+      - name: pickup_location_id
+        data_tests:
+          - relationships:
+              to: ref('dim_zone')
+              field: location_id
+      - name: total_amount
+        data_tests:
+          - not_null
+      - name: duration_minutes
+        description: "Trip duration in minutes; must be non-negative."
+        data_tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+
+  - name: agg_daily_revenue
+    description: "Daily revenue and trip metrics by pickup borough."
+    columns:
+      - name: trip_count
+        data_tests:
+          - not_null

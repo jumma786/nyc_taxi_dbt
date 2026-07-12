@@ -1,0 +1,22 @@
+target/
+dbt_packages/
+logs/
+data/
+*.duckdb
+*.duckdb.wal
+.user.yml
+__pycache__/
+
+# airflow runtime
+airflow/logs/
+airflow/*.db
+airflow/*.cfg
+airflow/airflow-webserver.pid
+airflow/standalone_admin_password.txt
+
+# cloud creds (never commit)
+*.json
+!package*.json
+.gcp/
+secrets/
+.dlt/secrets.toml
