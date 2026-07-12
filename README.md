@@ -16,6 +16,7 @@ trip data into analytics-ready marts with dbt, running locally on DuckDB.
 - Source-to-mart **lineage** via `dbt docs`
 - **Orchestration** with Airflow: scheduled extract → load → dbt build → verify
 - **CI** with GitHub Actions running `dbt build` on every push
+- **BI layer**: an interactive Streamlit dashboard served from the DuckDB marts
 
 ## Architecture
 
@@ -55,6 +56,26 @@ re-run — only newer trips are processed:
 python scripts/download_data.py --year 2024 --months 4
 dbt run --select fct_trips+ --profiles-dir .
 ```
+
+## Dashboard (BI layer)
+
+An interactive **Streamlit** dashboard reads the dbt marts directly from the
+DuckDB file — the consumption layer on top of `agg_daily_revenue` and
+`fct_trips`:
+
+- KPI tiles (total revenue, trips, passengers, avg tip %)
+- Revenue by borough, trips by hour of day, and a daily revenue trend
+- Sidebar filters for pickup date range and borough
+- Colorblind-safe categorical palette; boroughs colored by a fixed hue order
+
+```bash
+pip install -r dashboard/requirements.txt
+# build the marts first (see Quickstart), then:
+streamlit run dashboard/app.py        # opens at http://localhost:8501
+```
+
+The DuckDB path defaults to `nyc_taxi.duckdb` at the project root; override with
+the `NYC_TAXI_DUCKDB` environment variable.
 
 ## Orchestration (Airflow)
 
@@ -132,4 +153,7 @@ airflow/
 loader/
   load_to_bq.py  (dlt: Parquet -> GCS -> BigQuery)
   CLOUD_RUNBOOK.md, requirements.txt
+dashboard/
+  app.py         (Streamlit BI layer over the DuckDB marts)
+  requirements.txt
 ```
