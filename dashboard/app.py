@@ -265,7 +265,10 @@ def main() -> None:
             default=[b for b in boroughs if b not in ("N/A", "Unknown")],
         )
         st.divider()
-        st.caption(f"DuckDB: `{Path(DB_PATH).name}`")
+        if Path(DB_PATH).exists():
+            st.caption(f"Source: local DuckDB warehouse (`{Path(DB_PATH).name}`)")
+        else:
+            st.caption("Source: pre-aggregated dbt marts (`dashboard/data/*.parquet`)")
 
     if not selected:
         st.info("Select at least one borough.")
