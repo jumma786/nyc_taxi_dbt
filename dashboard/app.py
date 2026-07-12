@@ -57,19 +57,47 @@ st.set_page_config(
 
 
 # --- data access ------------------------------------------------------------
+#
+# The app runs in two modes from one code path, both backed by DuckDB:
+#   local  — the full dbt-built warehouse (nyc_taxi.duckdb) is present.
+#   cloud  — no warehouse file (e.g. Streamlit Community Cloud); read the
+#            committed pre-aggregated marts in dashboard/data/*.parquet.
+# Either way we expose two views, `daily_src` and `hourly_src`, so every
+# query below is identical regardless of backend.
+
+DASH_DATA = Path(__file__).resolve().parent / "data"
+
 
 @st.cache_resource
 def _connect() -> duckdb.DuckDBPyConnection:
-    if not Path(DB_PATH).exists():
+    # Always an in-memory connection so we can define views; the data backend
+    # is either the attached read-only warehouse (local) or parquet (cloud).
+    con = duckdb.connect(":memory:")
+
+    if Path(DB_PATH).exists():
+        con.execute(f"attach '{DB_PATH}' as w (read_only)")
+        con.execute("create view daily_src as select * from w.main.agg_daily_revenue")
+        con.execute(
+            "create view hourly_src as "
+            "select pickup_date, pickup_borough, pickup_hour, count(*) as trip_count "
+            "from w.main.fct_trips group by 1, 2, 3"
+        )
+        return con
+
+    daily_pq = DASH_DATA / "daily.parquet"
+    hourly_pq = DASH_DATA / "hourly.parquet"
+    if not (daily_pq.exists() and hourly_pq.exists()):
         st.error(
-            f"DuckDB file not found at {DB_PATH}.\n\n"
-            "Build the marts first:\n"
+            "No data found. Either build the marts locally:\n"
             "    python scripts/download_data.py --year 2024 --months 1 2 3\n"
-            "    dbt deps --profiles-dir .\n"
-            "    dbt build --profiles-dir ."
+            "    dbt deps --profiles-dir . && dbt build --profiles-dir .\n"
+            "or ship the pre-aggregated dashboard/data/*.parquet files."
         )
         st.stop()
-    return duckdb.connect(DB_PATH, read_only=True)
+
+    con.execute(f"create view daily_src as select * from read_parquet('{daily_pq.as_posix()}')")
+    con.execute(f"create view hourly_src as select * from read_parquet('{hourly_pq.as_posix()}')")
+    return con
 
 
 @st.cache_data(show_spinner=False)
@@ -78,7 +106,7 @@ def load_daily(start: date, end: date, boroughs: tuple[str, ...]) -> pd.DataFram
     q = """
         select pickup_date, pickup_borough, trip_count, total_passengers,
                total_revenue, avg_fare, avg_distance, avg_duration_min, avg_tip_pct
-        from agg_daily_revenue
+        from daily_src
         where pickup_date >= ? and pickup_date < ?
           and pickup_borough in ?
         order by pickup_date
@@ -90,8 +118,8 @@ def load_daily(start: date, end: date, boroughs: tuple[str, ...]) -> pd.DataFram
 def load_hourly(start: date, end: date, boroughs: tuple[str, ...]) -> pd.DataFrame:
     con = _connect()
     q = """
-        select pickup_hour, count(*) as trip_count
-        from fct_trips
+        select pickup_hour, sum(trip_count) as trip_count
+        from hourly_src
         where pickup_date >= ? and pickup_date < ?
           and pickup_borough in ?
         group by pickup_hour
@@ -104,7 +132,7 @@ def load_hourly(start: date, end: date, boroughs: tuple[str, ...]) -> pd.DataFra
 def all_boroughs() -> list[str]:
     con = _connect()
     df = con.execute(
-        "select distinct pickup_borough from agg_daily_revenue "
+        "select distinct pickup_borough from daily_src "
         "where pickup_borough is not null order by 1"
     ).df()
     return df["pickup_borough"].tolist()

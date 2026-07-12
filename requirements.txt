@@ -1,0 +1,8 @@
+# Dependencies for the Streamlit dashboard (dashboard/app.py).
+# Streamlit Community Cloud installs from this root requirements.txt.
+# The dbt project itself uses dbt-duckdb (see README Quickstart) and is
+# not needed to run the deployed dashboard.
+streamlit>=1.40
+plotly>=5.20
+duckdb>=1.0
+pandas>=2.0

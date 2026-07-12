@@ -1,7 +1,17 @@
-# NYC Taxi Analytics — dbt + DuckDB
+# 🚕 NYC Taxi Analytics — dbt + DuckDB + Streamlit
 
-An end-to-end analytics engineering project transforming raw NYC TLC yellow taxi
-trip data into analytics-ready marts with dbt, running locally on DuckDB.
+[![dbt CI](https://github.com/jumma786/nyc_taxi_dbt/actions/workflows/ci.yml/badge.svg)](https://github.com/jumma786/nyc_taxi_dbt/actions/workflows/ci.yml)
+[![Streamlit](https://img.shields.io/badge/Streamlit-live%20demo-ff4b4b?logo=streamlit&logoColor=white)](https://share.streamlit.io/)
+[![dbt](https://img.shields.io/badge/dbt-1.x-ff694b?logo=dbt&logoColor=white)](https://www.getdbt.com/)
+[![DuckDB](https://img.shields.io/badge/DuckDB-embedded-fff000?logo=duckdb&logoColor=black)](https://duckdb.org/)
+
+An end-to-end **analytics engineering** project that transforms ~9.4M raw NYC TLC
+yellow-taxi trips into tested, analytics-ready marts with **dbt**, and serves them
+through an interactive **Streamlit** dashboard — portable from a free local DuckDB
+setup to a BigQuery warehouse.
+
+> **🔗 Live demo:** _deploy in progress — link coming here._
+> Run it locally in 30 seconds: see [Dashboard (BI layer)](#dashboard-bi-layer).
 
 **Author:** Jumma Mohammad Teli · [GitHub](https://github.com/jumma786) · [LinkedIn](https://linkedin.com/in/jumma-mohammad)
 
@@ -16,7 +26,8 @@ trip data into analytics-ready marts with dbt, running locally on DuckDB.
 - Source-to-mart **lineage** via `dbt docs`
 - **Orchestration** with Airflow: scheduled extract → load → dbt build → verify
 - **CI** with GitHub Actions running `dbt build` on every push
-- **BI layer**: an interactive Streamlit dashboard served from the DuckDB marts
+- **BI layer**: an interactive Streamlit dashboard, deployable to the cloud with
+  no database (reads pre-aggregated marts)
 
 ## Architecture
 
@@ -59,9 +70,12 @@ dbt run --select fct_trips+ --profiles-dir .
 
 ## Dashboard (BI layer)
 
-An interactive **Streamlit** dashboard reads the dbt marts directly from the
-DuckDB file — the consumption layer on top of `agg_daily_revenue` and
-`fct_trips`:
+<!-- Add a screenshot: save it as dashboard/screenshot.png, then uncomment:
+![NYC Taxi Analytics dashboard](dashboard/screenshot.png)
+-->
+
+An interactive **Streamlit** dashboard is the consumption layer on top of the
+`agg_daily_revenue` and `fct_trips` marts:
 
 - KPI tiles (total revenue, trips, passengers, avg tip %)
 - Revenue by borough, trips by hour of day, and a daily revenue trend
@@ -69,10 +83,25 @@ DuckDB file — the consumption layer on top of `agg_daily_revenue` and
 - Colorblind-safe categorical palette; boroughs colored by a fixed hue order
 
 ```bash
-pip install -r dashboard/requirements.txt
+pip install -r requirements.txt
 # build the marts first (see Quickstart), then:
 streamlit run dashboard/app.py        # opens at http://localhost:8501
 ```
+
+**Two data backends, one code path.** The app talks to DuckDB either way:
+
+- **Local** — attaches the full dbt-built warehouse (`nyc_taxi.duckdb`) read-only.
+- **Cloud** — when no warehouse file is present (e.g. Streamlit Community Cloud),
+  it reads small pre-aggregated marts committed at `dashboard/data/*.parquet`
+  (~85 KB total), so the app deploys with **no database and no 160 MB of raw data**.
+
+### Deploy it (Streamlit Community Cloud — free)
+
+1. Push this repo to GitHub (already done).
+2. Go to **[share.streamlit.io](https://share.streamlit.io)** → sign in with GitHub.
+3. **New app** → pick this repo, branch `main`, **main file path** `dashboard/app.py`.
+4. **Deploy.** Dependencies install from the root `requirements.txt`; the app reads
+   `dashboard/data/*.parquet`. You get a public `https://<app>.streamlit.app` URL.
 
 The DuckDB path defaults to `nyc_taxi.duckdb` at the project root; override with
 the `NYC_TAXI_DUCKDB` environment variable.
@@ -154,6 +183,7 @@ loader/
   load_to_bq.py  (dlt: Parquet -> GCS -> BigQuery)
   CLOUD_RUNBOOK.md, requirements.txt
 dashboard/
-  app.py         (Streamlit BI layer over the DuckDB marts)
-  requirements.txt
+  app.py         (Streamlit BI layer; local DuckDB or cloud parquet)
+  data/          daily.parquet, hourly.parquet (small, for cloud deploy)
+requirements.txt (dashboard deps; used by Streamlit Community Cloud)
 ```

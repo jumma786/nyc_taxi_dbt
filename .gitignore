@@ -2,6 +2,8 @@ target/
 dbt_packages/
 logs/
 data/
+# but DO commit the small pre-aggregated marts the deployed dashboard reads
+!dashboard/data/
 *.duckdb
 *.duckdb.wal
 .user.yml
