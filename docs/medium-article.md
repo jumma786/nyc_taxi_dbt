@@ -95,6 +95,8 @@ Marts are only useful if someone can *see* them, so I built a **Streamlit dashbo
 
 The interesting engineering problem: the dashboard reads a 160 MB local DuckDB file with 9.4M rows — you can't deploy *that* to a free host. So I gave the app **two backends behind one code path**. Locally it attaches the full warehouse read-only. In the cloud, where there's no warehouse, it reads tiny **pre-aggregated Parquet files** (~85 KB total) committed to the repo. The app deploys to Streamlit Community Cloud with no database and no raw data — and the code that draws the charts doesn't know or care which backend it's on.
 
+**👉 You can play with the live dashboard here: [nyctaxidbt.streamlit.app](https://nyctaxidbt-as6niaviukjr4sinhjdpyz.streamlit.app/)**
+
 ## What the data says
 
 A few things jumped out once the dashboard was live:

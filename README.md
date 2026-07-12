@@ -1,7 +1,7 @@
 # 🚕 NYC Taxi Analytics — dbt + DuckDB + Streamlit
 
 [![dbt CI](https://github.com/jumma786/nyc_taxi_dbt/actions/workflows/ci.yml/badge.svg)](https://github.com/jumma786/nyc_taxi_dbt/actions/workflows/ci.yml)
-[![Streamlit](https://img.shields.io/badge/Streamlit-live%20demo-ff4b4b?logo=streamlit&logoColor=white)](https://share.streamlit.io/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-live%20demo-ff4b4b?logo=streamlit&logoColor=white)](https://nyctaxidbt-as6niaviukjr4sinhjdpyz.streamlit.app/)
 [![dbt](https://img.shields.io/badge/dbt-1.x-ff694b?logo=dbt&logoColor=white)](https://www.getdbt.com/)
 [![DuckDB](https://img.shields.io/badge/DuckDB-embedded-fff000?logo=duckdb&logoColor=black)](https://duckdb.org/)
 
@@ -10,8 +10,8 @@ yellow-taxi trips into tested, analytics-ready marts with **dbt**, and serves th
 through an interactive **Streamlit** dashboard — portable from a free local DuckDB
 setup to a BigQuery warehouse.
 
-> **🔗 Live demo:** _deploy in progress — link coming here._
-> Run it locally in 30 seconds: see [Dashboard (BI layer)](#dashboard-bi-layer).
+> **🔗 Live demo:** **[nyctaxidbt.streamlit.app](https://nyctaxidbt-as6niaviukjr4sinhjdpyz.streamlit.app/)**
+> — or run it locally in 30 seconds: see [Dashboard (BI layer)](#dashboard-bi-layer).
 
 **Author:** Jumma Mohammad Teli · [GitHub](https://github.com/jumma786) · [LinkedIn](https://linkedin.com/in/jumma-mohammad)
 
