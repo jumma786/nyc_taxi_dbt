@@ -72,9 +72,7 @@ engineer owns:
 
 **▶ [Open the live dashboard →](https://nyctaxidbt-as6niaviukjr4sinhjdpyz.streamlit.app/)**
 
-<!-- Screenshot: save a shot of the app as dashboard/screenshot.png and uncomment:
-![NYC Taxi Analytics dashboard](dashboard/screenshot.png)
--->
+[![NYC Taxi Analytics dashboard](dashboard/screenshot.png)](https://nyctaxidbt-as6niaviukjr4sinhjdpyz.streamlit.app/)
 
 What the data shows for **Q1 2024** (~9.4M trips):
 
